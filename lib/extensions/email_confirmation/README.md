@@ -12,6 +12,8 @@ Follow the instructions for extensions in [README.md](../../../README.md), and s
 
 ## Configuration
 
+### Let user know when confirmation is required for changing the e-mail
+
 Add the following section to your `WEB_PATH/templates/pow/registration/edit.html.eex` template (you may need to generate the templates first) after the e-mail field:
 
 ```elixir
@@ -21,6 +23,10 @@ Add the following section to your `WEB_PATH/templates/pow/registration/edit.html
   </div>
 <% end %>
 ```
+
+### Routes
+
+The `PowEmailConfirmation.Phoenix.Routes.after_halted_registration_path/1` and `PowEmailConfirmation.Phoenix.Routes.after_halted_sign_in_path/1` routes are used when halting unconfirmed e-mails registration and sign in. These can be overridden in your custom `MyAppWeb.Pow.Routes` module.
 
 ## Prevent persistent session sign in
 

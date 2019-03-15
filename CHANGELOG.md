@@ -3,6 +3,8 @@
 ## v1.0.5 (TBA)
 
 * Added `extension_messages/1` to extension controllers and callbacks
+* Added `extension_routes/1` to extension controllers and callbacks
+* Added `PowEmailConfirmation.Phoenix.Routes.after_halted_registration_path/1` and `PowEmailConfirmation.Phoenix.Routes.after_halted_sign_in_path/1` routes
 
 ## v1.0.4 (2019-03-13)
 

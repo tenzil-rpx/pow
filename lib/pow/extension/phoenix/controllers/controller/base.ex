@@ -10,7 +10,7 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
         # ...
       end
   """
-  alias Pow.{Config, Phoenix.Controller, Phoenix.Routes}
+  alias Pow.{Config, Phoenix.Controller}
 
   @doc false
   defmacro __using__(config) do
@@ -29,8 +29,10 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
       @doc false
       def extension_messages(conn), do: unquote(__MODULE__).__messages_module__(conn, @messages_fallback)
 
+      @routes_fallback unquote(__MODULE__).__routes_fallback__(__MODULE__)
+
       @doc false
-      def routes(conn), do: Controller.routes(conn, Routes)
+      def extension_routes(conn), do: unquote(__MODULE__).__routes_module__(conn, @routes_fallback)
     end
   end
 
@@ -43,17 +45,7 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
   end
 
   @doc false
-  def __messages_fallback__(module) do
-    [_controller | base] =
-      module
-      |> Module.split()
-      |> Enum.reverse()
-
-    [Messages]
-    |> Enum.concat(base)
-    |> Enum.reverse()
-    |> Module.concat()
-  end
+  def __messages_fallback__(module), do: fallback(module, Messages)
 
   # TODO: Remove config fallback by 1.1.0
   def __messages_fallback__(config, module, env) do
@@ -66,5 +58,28 @@ defmodule Pow.Extension.Phoenix.Controller.Base do
 
         module
     end
+  end
+
+  @doc false
+  def __routes_fallback__(module), do: fallback(module, Routes)
+
+  @doc false
+  def __routes_module__(conn, fallback) do
+    case Controller.routes(conn, fallback) do
+      ^fallback -> fallback
+      routes    -> Module.concat([routes, fallback])
+    end
+  end
+
+  defp fallback(controller, module) do
+    [_controller | base] =
+      controller
+      |> Module.split()
+      |> Enum.reverse()
+
+    [module]
+    |> Enum.concat(base)
+    |> Enum.reverse()
+    |> Module.concat()
   end
 end
