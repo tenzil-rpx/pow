@@ -33,6 +33,7 @@ defmodule Pow.Ecto.Context do
 
     * `:repo` - the ecto repo module (required)
     * `:user` - the user schema module (required)
+    * `:repo_opts` - keyword list options for the repo, `:prefix` can be set here
   """
   alias Ecto.Changeset
   alias Pow.Config
@@ -145,7 +146,9 @@ defmodule Pow.Ecto.Context do
   """
   @spec delete(user(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
   def delete(user, config) do
-    repo(config).delete(user)
+    opts = prefix_opts(config)
+
+    repo(config).delete(user, opts)
   end
 
   @doc """
@@ -157,8 +160,9 @@ defmodule Pow.Ecto.Context do
   def get_by(clauses, config) do
     user_mod = user_schema_mod(config)
     clauses  = normalize_user_id_field_value(user_mod, clauses)
+    opts     = prefix_opts(config)
 
-    repo(config).get_by(user_mod, clauses)
+    repo(config).get_by(user_mod, clauses, opts)
   end
 
   defp normalize_user_id_field_value(user_mod, clauses) do
@@ -177,8 +181,10 @@ defmodule Pow.Ecto.Context do
   """
   @spec do_insert(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
   def do_insert(changeset, config) do
+    opts = prefix_opts(config)
+
     changeset
-    |> repo(config).insert()
+    |> repo(config).insert(opts)
     |> reload_after_write(config)
   end
 
@@ -189,8 +195,10 @@ defmodule Pow.Ecto.Context do
   """
   @spec do_update(Changeset.t(), Config.t()) :: {:ok, user()} | {:error, Changeset.t()}
   def do_update(changeset, config) do
+    opts = prefix_opts(config)
+
     changeset
-    |> repo(config).update()
+    |> repo(config).update(opts)
     |> reload_after_write(config)
   end
 
@@ -198,7 +206,8 @@ defmodule Pow.Ecto.Context do
   defp reload_after_write({:ok, user}, config) do
     # When ecto updates/inserts, has_many :through associations are set to nil.
     # So we'll just reload when writes happen.
-    user = repo(config).get!(user.__struct__, user.id)
+    opts = prefix_opts(config)
+    user = repo(config).get!(user.__struct__, user.id, opts)
 
     {:ok, user}
   end
@@ -209,6 +218,16 @@ defmodule Pow.Ecto.Context do
   @spec repo(Config.t()) :: atom()
   def repo(config) do
     Config.get(config, :repo) || raise_no_repo_error()
+  end
+
+  defp prefix_opts(config) do
+    config
+    |> Config.get(:repo_opts, [])
+    |> Keyword.get(:prefix, nil)
+    |> case do
+      nil    -> []
+      prefix -> [prefix: prefix]
+    end
   end
 
   @doc """

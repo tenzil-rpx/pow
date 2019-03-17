@@ -5,6 +5,7 @@
 * Added `extension_messages/1` to extension controllers and callbacks
 * Improved feedback for when no templates are generated for an extension with `mix pow.extension.phoenix.gen.templates` and `mix pow.extension.phoenix.mailer.gen.templates` tasks
 * Deprecated `Pow.Extension.Ecto.Context.Base`
+* Added `:prefix` support for repo
 
 ## v1.0.4 (2019-03-13)
 
